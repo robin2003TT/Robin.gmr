@@ -9,20 +9,24 @@
 <body>
     <button id="backBtn" onclick="goBack()">🔙 Back</button>
     <h1>Food Catch Game</h1>
-
+    
     <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
+        <div id="player">🤤</div>
     </div>
 
-    <div id="lives">
-        <p>Lives: <span id="life-count">♥️♥️♥️</span></p>
+    <div id="controls">
+        <button id="leftBtn">◀️</button>
+        <button id="rightBtn">▶️</button>
     </div>
 
-    <div id="music-controls">
-        <button onclick="toggleMusic()">⏪</button>
-        <button onclick="toggleMusic()">▶️</button>
-        <button onclick="toggleMusic()">⏩</button>
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list"></ul>
     </div>
+
+    <audio id="bg-music" autoplay loop>
+        <source src="BUSSIN'.mp3" type="audio/mpeg">
+    </audio>
 
     <script src="game.js"></script>
 </body>
