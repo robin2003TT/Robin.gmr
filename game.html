@@ -29,17 +29,10 @@
         <p>Lives: <span id="lives">❤️❤️❤️</span></p>
     </div>
 
-    <!-- Music Player -->
+    <!-- Background Music -->
     <audio id="bg-music" autoplay loop>
         <source id="audio-source" src="BUSSIN'.mp3" type="audio/mpeg">
     </audio>
-
-    <div id="music-controls">
-        <button onclick="prevSong()">⏪</button>
-        <span id="music-name">BUSSIN'</span>
-        <button id="music-btn" onclick="toggleMusic()">▶️</button>
-        <button onclick="nextSong()">⏩</button>
-    </div>
 
     <button id="backBtn" onclick="goBack()">🔙 Back</button>
 
@@ -54,11 +47,16 @@
         let playerPosition = 50;
         let score = 0;
         let lives = 3;
-        let playerName = sessionStorage.getItem("playerName") || prompt("Enter your name:");
-        sessionStorage.setItem("playerName", playerName);
 
-        let goodItems = ["🍓","🍒","🍎","🍉","🍑","🍊","🥭","🍍","🍌","🍋","🍈","🍏","🍐","🥝","🫐","🍇","🍔","🍟","🍕","🍩","🍫","🍰"];
-        let badItems = ["😈","👿","👻","💀","☠️","💩","🔥","🦠","🐛","🪱","🕷️","🦟","🐌"];
+        // Ask for player name only once
+        let playerName = sessionStorage.getItem("playerName");
+        if (!playerName) {
+            playerName = prompt("Enter your name:");
+            sessionStorage.setItem("playerName", playerName);
+        }
+
+        let goodItems = ["🍓", "🍒", "🍎", "🍉", "🍑", "🍊", "🥭", "🍍", "🍌", "🍋", "🍏", "🍐", "🥝", "🫐", "🍇", "🍔", "🍟", "🍕", "🍩", "🍫", "🍰"];
+        let badItems = ["😈", "👿", "👻", "💀", "☠️", "💩", "🔥", "🦠", "🐛", "🪱", "🕷️", "🦟", "🐌"];
 
         function movePlayer(direction) {
             if (direction === "left" && playerPosition > 0) {
@@ -80,7 +78,13 @@
             item.textContent = isGood ? goodItems[Math.floor(Math.random() * goodItems.length)] : badItems[Math.floor(Math.random() * badItems.length)];
             item.dataset.type = isGood ? "good" : "bad";
 
-            item.style.left = Math.random() * 90 + "%";
+            // Prevent overlap by ensuring a minimum distance between falling items
+            let newPosition;
+            do {
+                newPosition = Math.random() * 90;
+            } while (document.querySelectorAll(".falling-item").some(existing => Math.abs(parseFloat(existing.style.left) - newPosition) < 5));
+            
+            item.style.left = newPosition + "%";
             gameContainer.appendChild(item);
 
             let fallInterval = setInterval(() => {
@@ -143,56 +147,17 @@
 
         // Music System
         let music = document.getElementById("bg-music");
-        let musicBtn = document.getElementById("music-btn");
         let audioSource = document.getElementById("audio-source");
-        let musicName = document.getElementById("music-name");
-
-        let songs = [
-            { name: "BUSSIN'", file: "BUSSIN'.mp3" },
-            { name: "Let's Go", file: "Lets Go.mp3" },
-            { name: "Showreel", file: "showreel.mp3" }
-        ];
-
-        let currentSongIndex = sessionStorage.getItem("musicIndex") ? parseInt(sessionStorage.getItem("musicIndex")) : 0;
-
-        function toggleMusic() {
-            if (music.paused) {
-                music.play();
-                musicBtn.textContent = "⏸";
-            } else {
-                music.pause();
-                musicBtn.textContent = "▶️";
-            }
-        }
-
-        function nextSong() {
-            currentSongIndex = (currentSongIndex + 1) % songs.length;
-            changeSong();
-        }
-
-        function prevSong() {
-            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-            changeSong();
-        }
-
-        function changeSong() {
-            audioSource.src = songs[currentSongIndex].file;
-            musicName.textContent = songs[currentSongIndex].name;
-            music.load();
-            music.play();
-            musicBtn.textContent = "⏸";
-        }
 
         function goBack() {
             sessionStorage.setItem("musicTime", music.currentTime);
-            sessionStorage.setItem("musicIndex", currentSongIndex);
             window.location.href = "index.html";
         }
 
         window.onload = function () {
             if (sessionStorage.getItem("musicTime")) {
                 music.currentTime = sessionStorage.getItem("musicTime");
-                changeSong();
+                music.play();
             }
         };
     </script>
