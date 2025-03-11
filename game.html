@@ -7,26 +7,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button id="backBtn" onclick="goBack()">🔙 Back</button>
-    <h1>Food Catch Game</h1>
-    
+    <h1>Catch the Good Food! 🍎</h1>
+
     <div id="game-container">
         <div id="player">🤤</div>
     </div>
 
-    <div id="controls">
-        <button id="leftBtn">◀️</button>
-        <button id="rightBtn">▶️</button>
-    </div>
+    <button id="leftBtn">◀️</button>
+    <button id="rightBtn">▶️</button>
+    <button id="backBtn" onclick="goBack()">⬅ Back</button>
 
-    <div id="leaderboard">
-        <h2>Leaderboard</h2>
-        <ul id="leaderboard-list"></ul>
-    </div>
+    <h2>Score: <span id="score">0</span> | Lives: <span id="lives">❤️❤️❤️</span></h2>
 
-    <audio id="bg-music" autoplay loop>
-        <source src="BUSSIN'.mp3" type="audio/mpeg">
-    </audio>
+    <h2>Leaderboard</h2>
+    <div id="leaderboard"></div>
 
     <script src="game.js"></script>
 </body>
