@@ -1,105 +1,91 @@
-const canvas = document.getElementById("game-container");
-const player = document.getElementById("player");
+// Game setup
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 800;
+canvas.height = 600;
 
-let playerX = canvas.offsetWidth / 2 - player.offsetWidth / 2;
-let playerY = canvas.offsetHeight - player.offsetHeight - 10;
-let moveLeft = false;
-let moveRight = false;
+let player = { x: canvas.width / 2, y: canvas.height - 60, width: 50, height: 50, speed: 5, emoji: '🤤' };
+let foodItems = [];
+let badItems = [];
 let score = 0;
 let lives = 3;
+let gameOver = false;
 
-// Update player position based on controls
-function movePlayer() {
-    if (moveLeft && playerX > 0) {
-        playerX -= 5;
-    }
-    if (moveRight && playerX + player.offsetWidth < canvas.offsetWidth) {
-        playerX += 5;
-    }
-    player.style.left = playerX + "px";
+const foodEmojis = ["🍓", "🍒", "🍎", "🍉", "🍑", "🍊", "🥭", "🍍", "🍌", "🍋", "🍋‍🟩", "🍈", "🍏", "🍐", "🥝", "🫒", "🫐", "🍇"];
+const badEmojis = ["😈", "👿", "👻", "💀", "☠️", "🎃", "💩", "👾", "🔥", "🦠", "🐛", "🪱", "🦋", "🐞", "🐝", "🪰", "🪳", "🦟", "🦂", "🕷️"];
+
+// Game loop
+function gameLoop() {
+    if (gameOver) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '30px Arial';
+    ctx.fillText(`Score: ${score}`, 10, 30);
+    ctx.fillText(`Lives: ♥️`.repeat(lives), 10, 60);
+
+    // Draw player
+    ctx.fillText(player.emoji, player.x, player.y);
+
+    // Move player
+    if (leftPressed && player.x > 0) player.x -= player.speed;
+    if (rightPressed && player.x < canvas.width - player.width) player.x += player.speed;
+
+    // Draw falling items
+    handleFallingItems();
+    requestAnimationFrame(gameLoop);
 }
 
-// Falling Items
-let fallingItems = [];
+function handleFallingItems() {
+    // Update food items
+    foodItems.forEach((item, index) => {
+        item.y += 2;
+        ctx.fillText(item.emoji, item.x, item.y);
 
-// Create falling items
-function createFallingItems() {
-    if (Math.random() < 0.02) {
-        const x = Math.random() * (canvas.offsetWidth - 30);
-        const type = Math.random() > 0.5 ? "food" : "bad";
-        const item = {
-            x: x,
-            y: 0,
-            type: type
-        };
-        fallingItems.push(item);
-    }
-}
+        if (item.y > canvas.height) foodItems.splice(index, 1);
 
-// Draw falling items and check for collision
-function drawFallingItems() {
-    fallingItems.forEach((item, index) => {
-        const fallingItem = document.createElement("div");
-        fallingItem.classList.add("falling-item");
-        fallingItem.style.left = item.x + "px";
-        fallingItem.style.animationDuration = "4s";
-        fallingItem.innerHTML = item.type === "food" ? "🍎" : "💥";
-        canvas.appendChild(fallingItem);
-
-        item.y += 5;
-
-        // Collision detection with player
-        if (item.y + 30 > playerY && item.x + 30 > playerX && item.x < playerX + player.offsetWidth) {
-            if (item.type === "food") {
-                score += 10; // Food increases score
-            } else {
-                lives -= 1; // Bad item decreases lives
-            }
-            fallingItems.splice(index, 1); // Remove item after collision
-            fallingItem.remove(); // Remove element from DOM
+        if (item.y + 30 >= player.y && item.x > player.x && item.x < player.x + player.width) {
+            score += 10;
+            foodItems.splice(index, 1);
         }
+    });
 
-        // Remove item if it falls out of view
-        if (item.y > canvas.offsetHeight) {
-            fallingItems.splice(index, 1);
-            fallingItem.remove();
+    // Update bad items
+    badItems.forEach((item, index) => {
+        item.y += 2;
+        ctx.fillText(item.emoji, item.x, item.y);
+
+        if (item.y > canvas.height) badItems.splice(index, 1);
+
+        if (item.y + 30 >= player.y && item.x > player.x && item.x < player.x + player.width) {
+            lives -= 1;
+            if (lives <= 0) gameOver = true;
+            badItems.splice(index, 1);
         }
     });
 }
 
-// Update and animate the game
-function gameLoop() {
-    movePlayer();
-    createFallingItems();
-    drawFallingItems();
+// Control movement
+let leftPressed = false;
+let rightPressed = false;
 
-    // Display score and lives
-    if (lives <= 0) {
-        alert("Game Over! Final Score: " + score);
-        return;
-    }
-
-    requestAnimationFrame(gameLoop);
-}
-
-// Event listeners for buttons
-document.getElementById("leftBtn").addEventListener("click", function() {
-    moveLeft = true;
-});
-document.getElementById("rightBtn").addEventListener("click", function() {
-    moveRight = true;
-});
-document.getElementById("leftBtn").addEventListener("mouseup", function() {
-    moveLeft = false;
-});
-document.getElementById("rightBtn").addEventListener("mouseup", function() {
-    moveRight = false;
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') leftPressed = true;
+    if (e.key === 'ArrowRight') rightPressed = true;
 });
 
-// Back button functionality
-function goBack() {
-    window.history.back();
-}
+document.addEventListener('keyup', function (e) {
+    if (e.key === 'ArrowLeft') leftPressed = false;
+    if (e.key === 'ArrowRight') rightPressed = false;
+});
 
-// Start the game loop
+// Add new items
+setInterval(() => {
+    if (gameOver) return;
+    const food = { x: Math.random() * canvas.width, y: 0, emoji: foodEmojis[Math.floor(Math.random() * foodEmojis.length)] };
+    foodItems.push(food);
+
+    const bad = { x: Math.random() * canvas.width, y: 0, emoji: badEmojis[Math.floor(Math.random() * badEmojis.length)] };
+    badItems.push(bad);
+}, 1000);
+
+// Start game loop
 gameLoop();
