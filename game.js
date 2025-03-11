@@ -1,94 +1,60 @@
-const player = document.getElementById("player");
-const gameContainer = document.getElementById("game-container");
-const music = document.getElementById("bg-music");
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
+let player = document.getElementById("player");
+let gameContainer = document.getElementById("game-container");
+let scoreDisplay = document.getElementById("score");
+let livesDisplay = document.getElementById("lives");
+let leaderboardDisplay = document.getElementById("leaderboard");
 
-const foods = "🍓🍒🍎🍉🍑🍊🥭🍍🍌🍋🍈🍏🍐🥝🫐🍇🍔🍟🍕🍩🍫🍰".split("");
-const badItems = "😈👿👻💀☠️💩🔥🦠🐛🪱🕷️🦟🐌".split("");
-const heart = "♥️";
-
-let lives = 3;
 let score = 0;
-let playerPos = 50; // Center position
+let lives = 3;
+let playerPosition = 50;
 
-// Music Loop Between Two Songs
-const songs = ["BUSSIN'.mp3", "Let's Go.mp3"];
-let currentSongIndex = 0;
+const goodItems = ["🍓", "🍒", "🍎", "🍕", "🍩"];
+const badItems = ["💀", "💩", "🔥", "🦠"];
+const heart = "❤️";
 
-music.addEventListener("ended", () => {
-    currentSongIndex = (currentSongIndex + 1) % songs.length;
-    music.src = songs[currentSongIndex];
-    music.play();
-});
-
-// Move Player
-leftBtn.addEventListener("click", () => movePlayer(-10));
-rightBtn.addEventListener("click", () => movePlayer(10));
-
-document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") movePlayer(-10);
-    if (e.key === "ArrowRight") movePlayer(10);
-});
-
-function movePlayer(direction) {
-    playerPos += direction;
-    playerPos = Math.max(0, Math.min(90, playerPos));
-    player.style.left = playerPos + "%";
+function moveLeft() {
+    playerPosition -= 10;
+    if (playerPosition < 0) playerPosition = 0;
+    player.style.left = playerPosition + "%";
 }
 
-// Spawn Falling Items
-function spawnItem() {
-    const item = document.createElement("div");
-    item.classList.add("falling-item");
+function moveRight() {
+    playerPosition += 10;
+    if (playerPosition > 90) playerPosition = 90;
+    player.style.left = playerPosition + "%";
+}
 
-    const isHeart = Math.random() < 0.05;
-    const isBad = Math.random() < 0.2;
-    item.textContent = isHeart ? heart : isBad ? badItems[Math.floor(Math.random() * badItems.length)] : foods[Math.floor(Math.random() * foods.length)];
-    
+document.getElementById("leftBtn").addEventListener("click", moveLeft);
+document.getElementById("rightBtn").addEventListener("click", moveRight);
+
+function createItem() {
+    let item = document.createElement("div");
+    item.classList.add("falling-item");
+    item.textContent = Math.random() < 0.8 ? goodItems[Math.floor(Math.random() * goodItems.length)] : badItems[Math.floor(Math.random() * badItems.length)];
     item.style.left = Math.random() * 90 + "%";
     gameContainer.appendChild(item);
 
     let fallInterval = setInterval(() => {
-        let itemTop = parseFloat(getComputedStyle(item).top) || 0;
-        item.style.top = itemTop + 5 + "px";
-
-        // Collision Check
-        if (itemTop > 350) {
-            let playerLeft = player.offsetLeft;
-            let playerRight = playerLeft + player.offsetWidth;
-            let itemLeft = item.offsetLeft;
-            let itemRight = itemLeft + item.offsetWidth;
-
-            if (itemRight > playerLeft && itemLeft < playerRight) {
-                clearInterval(fallInterval);
-                gameContainer.removeChild(item);
-                
-                if (item.textContent === heart) {
-                    if (lives < 3) lives++;
-                } else if (badItems.includes(item.textContent)) {
-                    lives--;
-                    if (lives <= 0) {
-                        alert("Game Over!");
-                        window.location.reload();
-                    }
+        let itemTop = parseInt(window.getComputedStyle(item).top);
+        if (itemTop > 370) {
+            let itemLeft = parseInt(window.getComputedStyle(item).left);
+            if (Math.abs(itemLeft - playerPosition) < 10) {
+                if (goodItems.includes(item.textContent)) {
+                    score++;
                 } else {
-                    score += 10;
+                    lives--;
                 }
             }
-        }
-
-        if (itemTop > 400) {
+            item.remove();
             clearInterval(fallInterval);
-            gameContainer.removeChild(item);
+        } else {
+            item.style.top = itemTop + 5 + "px";
         }
     }, 100);
 }
 
-// Spawn Items Every 2 Seconds
-setInterval(spawnItem, 2000);
+setInterval(createItem, 1500);
 
-// Back Button
 function goBack() {
     window.location.href = "index.html";
-            }
+}
