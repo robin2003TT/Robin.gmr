@@ -29,32 +29,6 @@ button {
     transition: 0.3s ease-in-out;
 }
 
-/* Primary Buttons */
-#subscribeBtn {
-    background-color: red;
-    color: white;
-    font-size: 25px;
-    padding: 15px 25px;
-    border-radius: 8px;
-}
-
-#subscribeBtn:hover {
-    background-color: darkred;
-}
-
-/* Socials Button */
-#socialsBtn {
-    background-color: blue;
-    color: white;
-    font-size: 22px;
-    padding: 12px 20px;
-    border-radius: 5px;
-}
-
-#socialsBtn:hover {
-    background-color: darkblue;
-}
-
 /* Music Controls */
 #music-controls {
     display: flex;
@@ -72,8 +46,11 @@ button {
     border-radius: 5px;
 }
 
-#music-controls input {
-    width: 150px;
+/* Lives */
+#lives {
+    font-size: 24px;
+    margin-top: 20px;
+    color: red;
 }
 
 /* Game Styles */
@@ -110,16 +87,6 @@ button {
     font-size: 25px;
     padding: 12px 20px;
     border-radius: 5px;
-    position: fixed;
-    bottom: 10px;
-}
-
-#leftBtn {
-    left: 20px;
-}
-
-#rightBtn {
-    right: 20px;
 }
 
 #leftBtn:hover, #rightBtn:hover {
@@ -142,39 +109,6 @@ button {
     }
     100% {
         transform: translateY(200px) rotate(360deg);
-    }
-}
-
-/* Leaderboard */
-#leaderboard {
-    width: 80%;
-    max-width: 500px;
-    margin: auto;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px white;
-}
-
-#leaderboard h2 {
-    text-align: center;
-    color: yellow;
-}
-
-.leaderboard-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px;
-    border-bottom: 1px solid white;
-}
-
-/* Animations */
-@keyframes fall {
-    0% {
-        top: -30px;
-    }
-    100% {
-        top: 400px;
     }
 }
 
