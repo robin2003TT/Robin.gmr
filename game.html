@@ -7,20 +7,35 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Catch the Good Food! 🍎</h1>
-
+    <h1>Catch the Food!</h1>
+    
+    <!-- Game Container -->
     <div id="game-container">
         <div id="player">🤤</div>
     </div>
 
+    <!-- Score & Lives -->
+    <div id="info">
+        <h2>Score: <span id="score">0</span></h2>
+        <h2>Lives: <span id="lives">❤️❤️❤️</span></h2>
+    </div>
+
+    <!-- Buttons -->
     <button id="leftBtn">◀️</button>
     <button id="rightBtn">▶️</button>
-    <button id="backBtn" onclick="goBack()">⬅ Back</button>
+    <button onclick="goBack()">🔙 Back</button>
 
-    <h2>Score: <span id="score">0</span> | Lives: <span id="lives">❤️❤️❤️</span></h2>
+    <!-- Leaderboard -->
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list"></ul>
+    </div>
 
-    <h2>Leaderboard</h2>
-    <div id="leaderboard"></div>
+    <!-- Background Music -->
+    <audio id="bg-music" autoplay loop>
+        <source id="audio-source" src="BUSSIN'.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
 
     <script src="game.js"></script>
 </body>
