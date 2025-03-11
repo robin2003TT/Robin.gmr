@@ -47,6 +47,8 @@
             let playerPosition = 50;
             let score = 0;
             let lives = 3;
+            const maxLives = 3;
+            let fallingItems = [];
 
             // Ask for player name only once
             let playerName = sessionStorage.getItem("playerName");
@@ -57,6 +59,7 @@
 
             let goodItems = ["🍓", "🍒", "🍎", "🍉", "🍑", "🍊", "🥭", "🍍", "🍌", "🍋", "🍏", "🍐", "🥝", "🫐", "🍇", "🍔", "🍟", "🍕", "🍩", "🍫", "🍰"];
             let badItems = ["😈", "👿", "👻", "💀", "☠️", "💩", "🔥", "🦠", "🐛", "🪱", "🕷️", "🦟", "🐌"];
+            let heartItem = "❤️";
 
             function movePlayer(direction) {
                 if (direction === "left" && playerPosition > 0) {
@@ -71,15 +74,26 @@
             document.getElementById("rightBtn").addEventListener("click", () => movePlayer("right"));
 
             function spawnItem() {
+                if (fallingItems.length > 5) return; // Prevents too many items at once
+
                 let item = document.createElement("div");
                 item.classList.add("falling-item");
 
-                let isGood = Math.random() < 0.8;
-                item.textContent = isGood ? goodItems[Math.floor(Math.random() * goodItems.length)] : badItems[Math.floor(Math.random() * badItems.length)];
-                item.dataset.type = isGood ? "good" : "bad";
+                let randomChance = Math.random();
+                if (randomChance < 0.7) {
+                    item.textContent = goodItems[Math.floor(Math.random() * goodItems.length)];
+                    item.dataset.type = "good";
+                } else if (randomChance < 0.9) {
+                    item.textContent = badItems[Math.floor(Math.random() * badItems.length)];
+                    item.dataset.type = "bad";
+                } else {
+                    item.textContent = heartItem;
+                    item.dataset.type = "heart";
+                }
 
                 item.style.left = Math.random() * 90 + "%";
                 gameContainer.appendChild(item);
+                fallingItems.push(item);
 
                 let fallInterval = setInterval(() => {
                     let itemRect = item.getBoundingClientRect();
@@ -90,6 +104,7 @@
                     if (itemRect.bottom >= window.innerHeight) {
                         clearInterval(fallInterval);
                         item.remove();
+                        fallingItems = fallingItems.filter(i => i !== item);
                     }
 
                     if (
@@ -99,19 +114,22 @@
                     ) {
                         clearInterval(fallInterval);
                         item.remove();
+                        fallingItems = fallingItems.filter(i => i !== item);
 
                         if (item.dataset.type === "good") {
                             score++;
                             if (score % 100 === 0) {
                                 alert(`Level Up! You're now at Level ${score / 100}`);
                             }
-                        } else {
+                        } else if (item.dataset.type === "bad") {
                             lives--;
                             if (lives <= 0) {
                                 alert("Game Over! Your score: " + score);
                                 updateLeaderboard();
                                 resetGame();
                             }
+                        } else if (item.dataset.type === "heart" && lives < maxLives) {
+                            lives++;
                         }
 
                         updateUI();
@@ -135,11 +153,13 @@
 
             function resetGame() {
                 score = 0;
-                lives = 3;
+                lives = maxLives;
+                fallingItems.forEach(item => item.remove());
+                fallingItems = [];
                 updateUI();
             }
 
-            setInterval(spawnItem, 1000);
+            setInterval(spawnItem, 1500);
 
             // Music System
             let music = document.getElementById("bg-music");
