@@ -1,101 +1,94 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const player = document.getElementById("player");
+const gameContainer = document.getElementById("game-container");
+const music = document.getElementById("bg-music");
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
 
-canvas.width = 800;
-canvas.height = 600;
+const foods = "🍓🍒🍎🍉🍑🍊🥭🍍🍌🍋🍈🍏🍐🥝🫐🍇🍔🍟🍕🍩🍫🍰".split("");
+const badItems = "😈👿👻💀☠️💩🔥🦠🐛🪱🕷️🦟🐌".split("");
+const heart = "♥️";
 
-let player = { x: canvas.width / 2 - 25, y: canvas.height - 60, width: 50, height: 50, speed: 7, emoji: "🤤" };
-let foodItems = [];
-let badItems = [];
-let score = 0;
 let lives = 3;
-let gameOver = false;
+let score = 0;
+let playerPos = 50; // Center position
 
-const foodEmojis = ["🍓", "🍒", "🍎", "🍉", "🍑", "🍊", "🥭", "🍍", "🍌"];
-const badEmojis = ["😈", "👿", "👻", "💀", "☠️", "🎃", "💩", "🔥"];
+// Music Loop Between Two Songs
+const songs = ["BUSSIN'.mp3", "Let's Go.mp3"];
+let currentSongIndex = 0;
 
-let leftPressed = false;
-let rightPressed = false;
+music.addEventListener("ended", () => {
+    currentSongIndex = (currentSongIndex + 1) % songs.length;
+    music.src = songs[currentSongIndex];
+    music.play();
+});
 
-// Key Event Listeners
+// Move Player
+leftBtn.addEventListener("click", () => movePlayer(-10));
+rightBtn.addEventListener("click", () => movePlayer(10));
+
 document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") leftPressed = true;
-    if (e.key === "ArrowRight") rightPressed = true;
+    if (e.key === "ArrowLeft") movePlayer(-10);
+    if (e.key === "ArrowRight") movePlayer(10);
 });
 
-document.addEventListener("keyup", (e) => {
-    if (e.key === "ArrowLeft") leftPressed = false;
-    if (e.key === "ArrowRight") rightPressed = false;
-});
-
-// Update Game
-function update() {
-    if (gameOver) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = "30px Arial";
-    ctx.fillText(`Score: ${score}`, 10, 30);
-    ctx.fillText(`Lives: ${"♥️".repeat(lives)}`, 10, 60);
-
-    // Move Player
-    if (leftPressed && player.x > 0) player.x -= player.speed;
-    if (rightPressed && player.x < canvas.width - player.width) player.x += player.speed;
-
-    ctx.fillText(player.emoji, player.x, player.y);
-
-    // Handle Falling Items
-    handleFallingItems();
-
-    requestAnimationFrame(update);
+function movePlayer(direction) {
+    playerPos += direction;
+    playerPos = Math.max(0, Math.min(90, playerPos));
+    player.style.left = playerPos + "%";
 }
 
-// Handle Falling Items
-function handleFallingItems() {
-    foodItems.forEach((item, index) => {
-        item.y += 3;
-        ctx.fillText(item.emoji, item.x, item.y);
+// Spawn Falling Items
+function spawnItem() {
+    const item = document.createElement("div");
+    item.classList.add("falling-item");
 
-        if (item.y > canvas.height) foodItems.splice(index, 1);
+    const isHeart = Math.random() < 0.05;
+    const isBad = Math.random() < 0.2;
+    item.textContent = isHeart ? heart : isBad ? badItems[Math.floor(Math.random() * badItems.length)] : foods[Math.floor(Math.random() * foods.length)];
+    
+    item.style.left = Math.random() * 90 + "%";
+    gameContainer.appendChild(item);
 
-        if (collisionDetected(item, player)) {
-            score += 10;
-            foodItems.splice(index, 1);
-        }
-    });
+    let fallInterval = setInterval(() => {
+        let itemTop = parseFloat(getComputedStyle(item).top) || 0;
+        item.style.top = itemTop + 5 + "px";
 
-    badItems.forEach((item, index) => {
-        item.y += 3;
-        ctx.fillText(item.emoji, item.x, item.y);
+        // Collision Check
+        if (itemTop > 350) {
+            let playerLeft = player.offsetLeft;
+            let playerRight = playerLeft + player.offsetWidth;
+            let itemLeft = item.offsetLeft;
+            let itemRight = itemLeft + item.offsetWidth;
 
-        if (item.y > canvas.height) badItems.splice(index, 1);
-
-        if (collisionDetected(item, player)) {
-            lives -= 1;
-            if (lives <= 0) {
-                gameOver = true;
-                alert("Game Over! Refresh to play again.");
+            if (itemRight > playerLeft && itemLeft < playerRight) {
+                clearInterval(fallInterval);
+                gameContainer.removeChild(item);
+                
+                if (item.textContent === heart) {
+                    if (lives < 3) lives++;
+                } else if (badItems.includes(item.textContent)) {
+                    lives--;
+                    if (lives <= 0) {
+                        alert("Game Over!");
+                        window.location.reload();
+                    }
+                } else {
+                    score += 10;
+                }
             }
-            badItems.splice(index, 1);
         }
-    });
+
+        if (itemTop > 400) {
+            clearInterval(fallInterval);
+            gameContainer.removeChild(item);
+        }
+    }, 100);
 }
 
-// Collision Detection
-function collisionDetected(item, player) {
-    return (
-        item.y + 30 >= player.y &&
-        item.x > player.x &&
-        item.x < player.x + player.width
-    );
-}
+// Spawn Items Every 2 Seconds
+setInterval(spawnItem, 2000);
 
-// Spawn Items
-setInterval(() => {
-    if (gameOver) return;
-
-    foodItems.push({ x: Math.random() * canvas.width, y: 0, emoji: foodEmojis[Math.floor(Math.random() * foodEmojis.length)] });
-    badItems.push({ x: Math.random() * canvas.width, y: 0, emoji: badEmojis[Math.floor(Math.random() * badEmojis.length)] });
-}, 1000);
-
-// Start Game Loop
-update();
+// Back Button
+function goBack() {
+    window.location.href = "index.html";
+            }
